@@ -13,8 +13,8 @@ import graph.Graph.InfosJSON;
 
 
 public class InfosWorker {
-    private static final String JEDIS_SERVER = "0.0.0.0";
-    private static final String QUEUE_NAME = "infograph/infos";
+    private static String JEDIS_SERVER;
+    private static final String QUEUE_NAME = "jenagraph/infos";
 
     private ArrayList<String> messageContainer = new ArrayList<String>();
 
@@ -23,6 +23,14 @@ public class InfosWorker {
 
     public static void main(String[] args) throws InterruptedException {
         new InfosWorker().run();
+    }
+
+    public InfosWorker() {
+this.JEDIS_SERVER = System.getenv("REDIS_ADDR");
+if (this.JEDIS_SERVER == null) {
+   this.JEDIS_SERVER = "0.0.0.0";
+        }
+        log("redis: "+this.JEDIS_SERVER);
     }
 
     public void run() throws InterruptedException {
@@ -110,7 +118,7 @@ public class InfosWorker {
                     log("subscribe returned, closing down");
                     jedis.quit();
                 } catch (Exception e) {
-                    log(">>> OH NOES Sub - " + e.getMessage());
+                    log(">>> OH NOES Sub - " + e.getMessage().length());
                     // e.printStackTrace();
                 }
             }
@@ -119,7 +127,7 @@ public class InfosWorker {
     }
 
     public void addInfos(String msg) {
-        log("Got message: %s", msg);
+        log("Got message: %s", msg.length());
 
         Gson gson = new Gson();
         InfosJSON infosJSON = gson.fromJson(msg, InfosJSON.class);

@@ -98,13 +98,14 @@ public class Graph {
 
     public Graph() {
         String value = System.getenv("USER");
-        if (value.equals("pc")) {
+        if (value != null && value.equals("pc")) {
             this.tdbDir = "/Users/pc/linkedinfo/TDBData";
         } else {
             this.tdbDir = "/root/linkedinfo/TDBData";
         }
 
         this.dataset = TDBFactory.createDataset(this.tdbDir);
+        log("connected to TDB at: " + this.tdbDir);
 //        this.graph = ModelFactory.createDefaultModel();
 //        this.graph = this.tdbDataset.getDefaultModel();
 
@@ -183,7 +184,7 @@ public class Graph {
         } finally {
             this.dataset.end();
         }
-        System.out.println("size: " + this.size());
+//        System.out.println("size: " + this.size());
         return 0;
     }
 
@@ -205,7 +206,7 @@ public class Graph {
             TagWithQuantity tag = new TagWithQuantity();
             tag.tagID = tagC.getKey();
             tag.quantity = tagC.getValue();
-            log("tag.quantity: " + tag.quantity);
+//            log("tag.quantity: " + tag.quantity);
             tag.label = this.graph.getResource(this.prefixTag + tag.tagID).getProperty(RDFS.label).getString();
             tags.add(tag);
         }
@@ -225,10 +226,10 @@ public class Graph {
         try {
             this.graph = this.dataset.getDefaultModel();
             if (order.endsWith("quantity")) {
-                log("got order parameter: "+order);
+//                log("got order parameter: "+order);
                 String queryString =  "SELECT ?info ?tag \n" +
                         "WHERE { ?info <" + this.propHasTag + "> ?tag }";
-                log("query string: "+queryString);
+//                log("query string: "+queryString);
                 Query query = QueryFactory.create(queryString) ;
                 try (QueryExecution qexec = QueryExecutionFactory.create(query, this.graph)) {
                     ResultSet results = qexec.execSelect() ;
@@ -244,7 +245,7 @@ public class Graph {
                         if (i == null) {
                             tagCount.put(tagID, 1);
                         } else {
-                            log("i: " + i);
+//                            log("i: " + i);
                             tagCount.put(tagID, i + 1);
                         }
                     }
@@ -264,10 +265,10 @@ public class Graph {
                 });
 
             } else {
-                log("got order parameter: "+order);
+//                log("got order parameter: "+order);
                 String queryString =  "SELECT ?tag \n" +
                         "WHERE { ?tag a "+ "<" + this.resTag + "> }";
-                log("query string: "+queryString);
+//                log("query string: "+queryString);
                 Query query = QueryFactory.create(queryString) ;
                 try (QueryExecution qexec = QueryExecutionFactory.create(query, this.graph)) {
                     ResultSet results = qexec.execSelect() ;
@@ -283,7 +284,7 @@ public class Graph {
                         if (i == null) {
                             tagCount.put(tagID, 1);
                         } else {
-                            log("i: " + i);
+//                            log("i: " + i);
                             tagCount.put(tagID, i + 1);
                         }
                     }

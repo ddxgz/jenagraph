@@ -21,7 +21,7 @@ public class Tags {
     public Tags(String order) throws IOException {
 
         Graph graph = new Graph();
-        graph.addInfos(graph.loadInfos("infos-sample.json"));
+//        graph.addInfos(graph.loadInfos("infos-sample.json"));
         this.tags = graph.tags(order, true);
 //        graph.write(System.out, "turtle");
 //        this.order = order;

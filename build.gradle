@@ -15,9 +15,11 @@ apply plugin: 'org.springframework.boot'
 
 
 jar {
-    baseName = 'gs-rest-service'
+    baseName = 'jenagraph'
     version =  '0.1.0'
 }
+
+//mainClassName = 'webapp.Application'
 
 
 repositories {
