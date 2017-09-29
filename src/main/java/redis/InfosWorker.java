@@ -26,11 +26,11 @@ public class InfosWorker {
     }
 
     public InfosWorker() {
-this.JEDIS_SERVER = System.getenv("REDIS_ADDR");
-if (this.JEDIS_SERVER == null) {
-   this.JEDIS_SERVER = "0.0.0.0";
+        this.JEDIS_SERVER = System.getenv("REDIS_ADDR");
+        if (this.JEDIS_SERVER == null) {
+            this.JEDIS_SERVER = "0.0.0.0";
         }
-        log("redis: "+this.JEDIS_SERVER);
+        log("redis: " + this.JEDIS_SERVER);
     }
 
     public void run() throws InterruptedException {
@@ -104,6 +104,13 @@ if (this.JEDIS_SERVER == null) {
                 log("Message received");
                 addInfos(message);
 //            log("Got message: %s",message);
+                try {
+                    log("to sleep sometime");
+                    Thread.sleep(1 * 1000);
+                    log("wake up");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 messageReceivedLatch.countDown();
             }
         };

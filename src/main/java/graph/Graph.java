@@ -132,7 +132,7 @@ public class Graph {
     }
 
     //TODO: to use model transaction, and graph set method instead of add
-    public int addInfos(Info[] infos) {
+    public int addInfosNoUpdate(Info[] infos) {
 //        System.out.println("infos: " + infos[0].title);
         this.dataset.begin(ReadWrite.WRITE);
         try {
@@ -163,6 +163,7 @@ public class Graph {
                 for (Tag tag : info.tags) {
 //                    System.out.println("info tag: " + tag.tagID);
                     Resource tagNode = this.graph.createResource(this.prefixTag + tag.tagID);
+//                    tagNode.addProperty(RDFS.label, tag.label);
                     this.graph.add(tagNode, RDF.type, this.resTag);
                     this.graph.add(tagNode, RDFS.label, tag.label);
                     this.graph.add(tagNode, this.propTagID, tag.tagID);
@@ -186,6 +187,116 @@ public class Graph {
         }
 //        System.out.println("size: " + this.size());
         return 0;
+    }
+
+    public int addInfos(Info[] infos) {
+//        System.out.println("infos: " + infos[0].title);
+        this.dataset.begin(ReadWrite.WRITE);
+        try {
+            this.graph = this.dataset.getDefaultModel();
+            for (Info info : infos) {
+//                System.out.println("info title: " + info.title);
+                Resource infoNode = this.graph.createResource(this.prefixInfo + info.key);
+
+                // remove all statements under resource, then add new
+                this.graph.removeAll(infoNode, null, null);
+
+                this.graph.add(infoNode, RDF.type, this.resInfo);
+                this.graph.add(infoNode, this.propInfoKey, info.key);
+                this.graph.add(infoNode, this.propURL, info.url);
+                this.graph.add(infoNode, DC.title, info.title);
+                this.graph.add(infoNode, DC.language, info.language);
+
+                for (Creator creator : info.creators) {
+//                    System.out.println("info creator: " + creator.creatorID);
+                    Resource creatorNode = this.graph.createResource(this.prefixCreator + creator.creatorID);
+                    // remove all statements under resource, then add new
+                    this.graph.removeAll(creatorNode, null, null);
+                    this.graph.add(creatorNode, RDF.type, DC.creator);
+                    this.graph.add(creatorNode, RDFS.label, creator.label);
+                    this.graph.add(creatorNode, this.propCreatorID, creator.creatorID);
+                    this.graph.add(infoNode, DC.creator, creatorNode);
+                }
+/*            Resource creatorNode = this.graph.createResource(this.prefixCreator + "defaultCreator");
+            this.graph.add(creatorNode, RDF.type, DC.creator);
+            this.graph.add(creatorNode, RDFS.label, "default creator");
+            this.graph.add(creatorNode, this.propCreatorID, "defaultCreator");
+            this.graph.add(infoNode, DC.creator, creatorNode);*/
+
+                for (Tag tag : info.tags) {
+//                    System.out.println("info tag: " + tag.tagID);
+//                    Resource tagNode = this.addOrChangeTag(tag);
+                    Resource tagNode = this.graph.createResource(this.prefixTag + tag.tagID);
+
+                    // remove all statements under resource, then add new
+                    this.graph.removeAll(tagNode, null, null);
+
+                    tagNode.addProperty(this.propTagID, tag.tagID);
+                    tagNode.addProperty(RDF.type, this.resTag);
+                    tagNode.addProperty(RDFS.label, tag.label);
+//                    this.graph.add(tagNode, RDF.type, this.resTag);
+//                    this.graph.add(tagNode, RDFS.label, tag.label);
+//                    this.graph.add(tagNode, this.propTagID, tag.tagID);
+                    this.graph.add(infoNode, this.propHasTag, tagNode);
+                }
+
+                if (info.inAggregations.length > 0) {
+//                System.out.println("info 0: "+info.inAggregations[0].aggregationID);
+                    for (Aggregation aggr : info.inAggregations) {
+//                        System.out.println("info aggr: " + aggr.aggregationID);
+                        Resource aggrNode = this.graph.createResource(this.prefixTag + aggr.aggregationID);
+                        // remove all statements under resource, then add new
+                        this.graph.removeAll(aggrNode, null, null);
+
+                        this.graph.add(aggrNode, RDF.type, this.resAggregation);
+                        this.graph.add(aggrNode, this.propAggregationID, aggr.aggregationID);
+                        this.graph.add(infoNode, this.propInAggregation, aggrNode);
+                    }
+                }
+            }
+            this.dataset.commit();
+        } finally {
+            this.dataset.end();
+        }
+//        System.out.println("size: " + this.size());
+        return 0;
+    }
+
+    public Resource addOrChangeTag(Tag tag) {
+        if (tagChanged(tag)) {
+            return this.changeTag(tag);
+        } else {
+            return this.addTag(tag);
+        }
+    }
+
+    private boolean tagChanged(Tag tag) {
+        Resource tagNode = this.graph.getResource(this.prefixTag+tag.tagID);
+        if (!tagNode.getProperty(RDFS.label).equals(tag.label)){
+            return true;
+        }
+        return false;
+    }
+
+    public Resource changeTag(Tag tag){
+        this.removeTag(tag.tagID);
+        return this.addTag(tag);
+    }
+
+    public void removeTag(String tagID){
+        Resource tagNode = this.graph.createResource(this.prefixTag + tagID);
+//        this.graph.remove(this.graph.getProperty(tagNode, RDFS.label));
+//        this.graph.remove(this.graph.getProperty(tagNode, RDF.type));
+//        this.graph.remove(this.graph.getProperty(tagNode, this.propTagID));
+        this.graph.removeAll(tagNode, null, null);
+    }
+
+    private Resource addTag(Tag tag){
+        Resource tagNode = this.graph.createResource(this.prefixTag + tag.tagID);
+        tagNode.addProperty(this.propTagID, tag.tagID);
+        tagNode.addProperty(RDF.type, this.resTag);
+        tagNode.addProperty(RDFS.label, tag.label);
+        return tagNode;
     }
 
     public class TagWithQuantity extends Tag {
