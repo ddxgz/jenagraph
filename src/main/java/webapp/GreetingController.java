@@ -2,10 +2,12 @@ package webapp;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import graph.Graph;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,5 +35,10 @@ public class GreetingController {
 //        res.put("tags", graph.tags(order));
         return new Tags(order);
 //        return res;
+    }
+    @RequestMapping("/{aggr}/similar-infos-by-tags")
+    public InfosByTags infosByTags(@RequestParam(value="tags") List<String> tags, @RequestParam(value="lan", defaultValue = "encn") String lan, @PathVariable String aggr) throws IOException {
+        System.out.println("got tags parameter: "+tags + "  aggr:"+aggr+" lan: "+lan);
+        return new InfosByTags(tags, aggr, lan);
     }
 }

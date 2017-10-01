@@ -322,6 +322,65 @@ public class Graph {
             tags.add(tag);
         }
     }
+
+    public Map<String, Integer> infosByTags(List<String> tagNames, String aggr, String lan) {
+        Map<String, Integer> keyCount = new HashMap<String, Integer>();
+
+        this.dataset.begin(ReadWrite.READ);
+        try {
+            this.graph = this.dataset.getDefaultModel();
+            keyCount = traveTags(tagNames,aggr,lan);
+            if(keyCount.size() == 0) {
+                tagNames = tagNames.subList(0,tagNames.size()-1);
+                this.dataset.end();
+                return infosByTags(tagNames,aggr,lan);
+            }
+
+        } finally {
+            this.dataset.end();
+        }
+        return keyCount;
+    }
+
+    public Map<String, Integer> traveTags(List<String> tagNames, String aggr, String lan) {
+        Map<String, Integer> keyCount = new HashMap<String, Integer>();
+        String conditions = "";
+        for (String tagName : tagNames) {
+//                Resource tag = this.graph.getResource(this.prefixTag+tagName);
+            String tagCond = " ?info <" + this.propHasTag + "> <" + this.prefixTag + tagName + "> .\n";
+            conditions += tagCond;
+        }
+
+//            Resource aggrRes = this.graph.getResource(this.prefixAggregation + aggr);
+//            StmtIterator infosIter = this.graph.listStatements(null,this.propInAggregation,aggrRes);
+
+
+        String queryString = "SELECT ?info \n" +
+                "WHERE { " + conditions + " }";
+        //                log("query string: "+queryString);
+        Query query = QueryFactory.create(queryString);
+        try (QueryExecution qexec = QueryExecutionFactory.create(query, this.graph)) {
+            ResultSet results = qexec.execSelect();
+            for (; results.hasNext(); ) {
+                QuerySolution soln = results.nextSolution();
+                RDFNode info = soln.get("info");       // Get a result variable by name.
+                String infoKey = info.toString();
+                keyCount.put(infoKey, tagNames.size());
+//                    Resource tag = soln.getResource("tag") ; // Get a result variable - must be a resource
+//                        Literal l = soln.getLiteral("VarL") ;   // Get a result variable - must be a literal
+//                        log("x: "+x +"  r:"+r);
+//                    String tagID = info.getProperty(this.propTagID).getString();
+//                    Integer i = tagCount.get(tagID);
+//                    if (i == null) {
+//                        tagCount.put(tagID, 1);
+//                    } else {
+//                            log("i: " + i);
+//                        tagCount.put(tagID, i + 1);
+//                    }
+            }
+        }
+        return keyCount;
+    }
     //TODO: different order
 //    public TagWithQuantity[] tags(String order) {
     public List<TagWithQuantity> tags(String order, Boolean sparql) {
