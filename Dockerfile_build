@@ -1,0 +1,23 @@
+# Use a Gradle image to build the JAR
+FROM gradle:7.2-jdk8 AS build
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the Gradle project files
+COPY . .
+
+# Build the JAR file
+RUN gradle build
+
+# Use a second stage to copy the JAR file to the local machine
+FROM alpine:latest
+
+# Set the working directory
+WORKDIR /output
+
+# Copy the JAR file from the build stage
+COPY --from=build /app/build/libs/*.jar .
+
+# This container does nothing, it's just used to copy the JAR file
+CMD ["sh"]

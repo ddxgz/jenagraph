@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.sun.org.apache.regexp.internal.RE;
+// import com.sun.org.apache.regexp.internal.RE;
 import org.apache.jena.base.Sys;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
